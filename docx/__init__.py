@@ -7,15 +7,15 @@ __version__ = '0.8.6'
 
 # register custom Part classes with opc package reader
 
-from docx.opc.constants import CONTENT_TYPE as CT, RELATIONSHIP_TYPE as RT
-from docx.opc.part import PartFactory
-from docx.opc.parts.coreprops import CorePropertiesPart
+from docx.opc.constants import CONTENT_TYPE as CT, RELATIONSHIP_TYPE as RT # type: ignore
+from docx.opc.part import PartFactory # type: ignore
+from docx.opc.parts.coreprops import CorePropertiesPart # type: ignore
 
-from docx.parts.document import DocumentPart
-from docx.parts.image import ImagePart
-from docx.parts.numbering import NumberingPart
-from docx.parts.settings import SettingsPart
-from docx.parts.styles import StylesPart
+from docx.parts.document import DocumentPart  # type: ignore
+from docx.parts.image import ImagePart # type: ignore
+from docx.parts.numbering import NumberingPart # type: ignore
+from docx.parts.settings import SettingsPart # type: ignore
+from docx.parts.styles import StylesPart # type: ignore
 
 
 def part_class_selector(content_type, reltype):

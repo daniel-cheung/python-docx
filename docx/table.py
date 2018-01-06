@@ -6,11 +6,11 @@ The |Table| object and related proxy classes.
 
 from __future__ import absolute_import, print_function, unicode_literals
 
-from .blkcntnr import BlockItemContainer
-from .enum.style import WD_STYLE_TYPE
-from .oxml.simpletypes import ST_Merge
-from .shared import Inches, lazyproperty, Parented
-
+from .blkcntnr import BlockItemContainer # type: ignore
+from .enum.style import WD_STYLE_TYPE # type: ignore
+from .oxml.simpletypes import ST_Merge # type: ignore
+from .shared import Inches, lazyproperty, Parented # type: ignore
+from typing import Tuple, List, cast
 
 class Table(Parented):
     """
@@ -33,7 +33,7 @@ class Table(Parented):
             tc.width = width
         return _Column(gridCol, self)
 
-    def add_row(self):
+    def add_row(self) -> '_Row':
         """
         Return a |_Row| instance, newly added bottom-most to the table.
         """
@@ -80,7 +80,7 @@ class Table(Parented):
         cell_idx = col_idx + (row_idx * self._column_count)
         return self._cells[cell_idx]
 
-    def column_cells(self, column_idx):
+    def column_cells(self, column_idx: int) -> List['_Cell']:
         """
         Sequence of cells in the column at *column_idx* in this table.
         """
@@ -106,7 +106,7 @@ class Table(Parented):
         return self._cells[start:end]
 
     @lazyproperty
-    def rows(self):
+    def rows(self) -> '_Rows':
         """
         |_Rows| instance containing the sequence of rows in this table.
         """
@@ -250,7 +250,7 @@ class _Cell(BlockItemContainer):
         return super(_Cell, self).tables
 
     @property
-    def text(self):
+    def text(self) -> str:
         """
         The entire contents of this cell as a string of text. Assigning
         a string to this property replaces all existing content with a single
@@ -259,7 +259,7 @@ class _Cell(BlockItemContainer):
         return '\n'.join(p.text for p in self.paragraphs)
 
     @text.setter
-    def text(self, text):
+    def text(self, text: str) -> None:
         """
         Write-only. Set entire contents of cell to the string *text*. Any
         existing content or revisions are replaced.
@@ -291,11 +291,11 @@ class _Column(Parented):
         self._gridCol = gridCol
 
     @property
-    def cells(self):
+    def cells(self) -> Tuple[_Cell]:
         """
         Sequence of |_Cell| instances corresponding to cells in this column.
         """
-        return tuple(self.table.column_cells(self._index))
+        return cast(Tuple[_Cell], tuple(self.table.column_cells(self._index)))
 
     @property
     def table(self):
@@ -407,7 +407,7 @@ class _Rows(Parented):
         super(_Rows, self).__init__(parent)
         self._tbl = tbl
 
-    def __getitem__(self, idx):
+    def __getitem__(self, idx: int) -> _Row:
         """
         Provide indexed access, (e.g. 'rows[0]')
         """
