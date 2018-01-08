@@ -271,6 +271,7 @@ class Docx(object):
     DEFAULT_FIGURE = "Figure "
     DEFAULT_TABLEAU = "Tableau "
     CHAPITRE_STYLE = "Chapitre"
+    NOBULLET_STYLE = "NoBullet"
     
     class ORIENT:
         LANDSCAPE = WD_ORIENTATION.LANDSCAPE  # @UndefinedVariable pylint: disable=no-member
