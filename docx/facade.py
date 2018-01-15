@@ -14,6 +14,8 @@ import abc
 
 ref_t = Callable[[str], str]
 
+TABLE_STD_STYLE = "Table Grid"
+
 class IDocxParRenderer(object, metaclass=abc.ABCMeta):
     @abc.abstractmethod
     def render(self, p: Paragraph, doc: Document) -> None:
