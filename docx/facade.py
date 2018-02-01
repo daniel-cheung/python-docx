@@ -157,6 +157,18 @@ class DocxEntitySubSubSection(DocxEntityDocumentTitle):
     def __init__(self, title, style=None):
         DocxEntityDocumentTitle.__init__(self, title, 3, style)
 
+class DocxEntitySubSubSubSection(DocxEntityDocumentTitle):
+    def __init__(self, title, style=None):
+        DocxEntityDocumentTitle.__init__(self, title, 4, style)
+
+class DocxEntitySubSubSubSubSection(DocxEntityDocumentTitle):
+    def __init__(self, title, style=None):
+        DocxEntityDocumentTitle.__init__(self, title, 5, style)
+
+class DocxEntitySubSubSubSubSubSection(DocxEntityDocumentTitle):
+    def __init__(self, title, style=None):
+        DocxEntityDocumentTitle.__init__(self, title, 6, style)
+
 class TableConstructor(object, metaclass=abc.ABCMeta):
     @abc.abstractmethod
     def render(self, t: Table) -> None:
@@ -303,6 +315,15 @@ class Docx(object):
         
     def subsubsec(self, title:str, style:str=None) -> DocxEntitySubSubSection:
         return cast(DocxEntitySubSubSection, self.entity.append(DocxEntitySubSubSection(title, style)))
+        
+    def subsubsubsec(self, title:str, style:str=None) -> DocxEntitySubSubSection:
+        return cast(DocxEntitySubSubSubSection, self.entity.append(DocxEntitySubSubSubSection(title, style)))
+        
+    def subsubsubsubsec(self, title:str, style:str=None) -> DocxEntitySubSubSection:
+        return cast(DocxEntitySubSubSubSubSection, self.entity.append(DocxEntitySubSubSubSubSection(title, style)))
+        
+    def subsubsubsubsubsec(self, title:str, style:str=None) -> DocxEntitySubSubSection:
+        return cast(DocxEntitySubSubSubSubSubSection, self.entity.append(DocxEntitySubSubSubSubSubSection(title, style)))
         
     def pic(self, filename: str, width:Cm=DocxEntityPicture.DEFAULT_WIDTH, height:Cm=None, caption:str=None) -> DocxEntityPicture:
         """
