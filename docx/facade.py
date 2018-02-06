@@ -11,6 +11,10 @@ from typing import Callable, List, cast
 from docx.text.paragraph import Paragraph # type: ignore
 from docx.table import Table # type: ignore
 import abc
+import uno  # type: ignore
+import Danny.OOo.OOoLib
+from Danny.OOo import OOoLib as ooo
+from Danny.OOo.OOoLib import makePropertyValue
 
 ref_t = Callable[[str], str]
 
@@ -338,6 +342,9 @@ class Docx(object):
         p = DocxEntityParagraph(pretext, style)
         return cast(DocxEntityParagraph, self.entity.append(p.b(text)))
         
+    def df(self, name, definition):
+        return self.b("Définition "+name+" : ").n(definition)
+        
     def pageBreak(self) -> DocsEntityPageBreak:
         return cast(DocsEntityPageBreak, self.entity.append(DocsEntityPageBreak()))
         
@@ -362,4 +369,45 @@ class Docx(object):
         else:
             filename = self.filename
         d.save(filename)
+
+    def export_pdf(self, target:str=None, source:str=None):
+        ## open docx with libreoffice
+        if source:
+            path = source
+        else:
+            if self.filename:
+                path = self.filename
+            else:
+                raise "Error source filename"
+        if target:
+            target_path = target
+        else:
+            target_path = "file://"+self.filename
+            
+        print("Loading file "+path)
+        p = makePropertyValue("Hidden", True)
+        oDoc = ooo.loadComponentFromURL( "file://"+path,  (p,) ) 
+    
+        if False:
+            ## add a page break and insert a document
+            cursor = oDoc.Text.createTextCursor()
+            cursor.gotoStart(False)
+            # Inserts a paragraph break at cursor position
+            oDoc.Text.insertControlCharacter( cursor.End, uno.getConstantByName('com.sun.star.text.ControlCharacter.PARAGRAPH_BREAK'), False)
+            cursor.gotoStart(False)
+            cursor.insertDocumentFromURL("file:///work/deva/dev/docs/sdd/templates/test.odt", ())
+        
+        ## refresh all indexes (TOC, etc.)
+        dispatcher = Danny.OOo.OOoLib.createUnoService( "com.sun.star.frame.DispatchHelper" )
+        #dispatcher.executeDispatch(oDoc.getCurrentController(), ".uno:UpdateAllIndexes", "", 0, ())    
+        dispatcher.executeDispatch(oDoc.getCurrentController(), ".uno:UpdateAll", "", 0, ())    
+        
+        ## export to PDF
+        p = makePropertyValue("FilterName", "writer_pdf_Export")
+        oDoc.storeToURL(target_path, (p,))
+        
+        ## clean all
+        #oDoc.store()
+        oDoc.dispose()
+        oDoc.close(True)
 
