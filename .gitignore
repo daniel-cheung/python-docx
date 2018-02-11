@@ -1,3 +1,4 @@
+.settings/
 .coverage
 /dist/
 /docs/.build/
