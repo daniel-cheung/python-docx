@@ -9,7 +9,7 @@ from __future__ import (
 )
 
 from .compat import cls_method_fn
-from .oxml import serialize_part_xml
+from .oxml import serialize_part_xml # type: ignore
 from ..oxml import parse_xml
 from .packuri import PackURI
 from .rel import Relationships
