@@ -15,6 +15,7 @@ import uno  # type: ignore
 import Danny.OOo.OOoLib
 from Danny.OOo import OOoLib as ooo
 from Danny.OOo.OOoLib import makePropertyValue
+from docx.shared import RGBColor
 
 ref_t = Callable[[str], str]
 
@@ -37,11 +38,32 @@ class DocxEntityParagraphItalic(IDocxParRenderer):
     def render(self, p: Paragraph, _: Document) -> None:
         p.add_run(self.text, self.style).italic = True
 
+class DocxEntityParagraphUnderline(IDocxParRenderer):
+    def __init__(self, text: str, style: str=None) -> None:
+        self.text, self.style = text, style
+    def render(self, p: Paragraph, _: Document) -> None:
+        p.add_run(self.text, self.style).underline = True
+
+class DocxEntityParagraphColor(IDocxParRenderer):
+    def __init__(self, text: str, color: RGBColor, style: str=None) -> None:
+        self.text, self.style, self.color = text, style, color
+    def render(self, p: Paragraph, _: Document) -> None:
+        p.add_run(self.text, self.style).font.color.rgb = self.color
+
 class DocxEntityParagraphBold(IDocxParRenderer):
     def __init__(self, text: str, style: str=None) -> None:
         self.text, self.style = text, style
     def render(self, p: Paragraph, _: Document) -> None:
         p.add_run(self.text, self.style).bold = True
+
+class DocxEntityParagraphFont(IDocxParRenderer):
+    def __init__(self, text: str, font_name:str, font_size:int, style: str=None) -> None:
+        self.text, self.style = text, style
+        self.font_name, self.font_size = font_name, font_size
+    def render(self, p: Paragraph, _: Document) -> None:
+        font = p.add_run(self.text, self.style).font
+        font.name = self.font_name
+        font.size = Pt(self.font_size)
 
 class DocxEntityParagraphItem(IDocxParRenderer):
     def __init__(self, text: str, style: str="List Paragraph") -> None:
@@ -72,6 +94,17 @@ class DocxEntityParagraph(IDocxEntityRenderer):
     def it(self, text: str, style: str=None) -> 'DocxEntityParagraph':
         self.subs.append(DocxEntityParagraphItalic(text, style))
         return self
+    def u(self, text: str, style: str=None) -> 'DocxEntityParagraph':
+        self.subs.append(DocxEntityParagraphUnderline(text, style))
+        return self
+    def color(self, text: str, r:int=0, g:int=0, b:int=0, style: str=None) -> 'DocxEntityParagraph':
+        self.subs.append(DocxEntityParagraphColor(text, RGBColor(r,g,b), style))
+        return self
+    def font(self, text:str = "", font_name:str="Calibri", font_size:int=12, style:str=None) -> 'DocxEntityParagraph':
+        self.subs.append(DocxEntityParagraphFont(text, font_name, font_size, style))
+        return self
+    def red(self, text: str, style: str=None) -> 'DocxEntityParagraph':
+        return self.color(text, 0xff, 0, 0, style)
     def n(self, text: str, style: str=None) -> 'DocxEntityParagraph':
         self.subs.append(DocxEntityParagraphNormal(text, style))
         return self
@@ -337,6 +370,18 @@ class Docx(object):
         
     def par(self, text:str = "", style:str=None) -> DocxEntityParagraph:
         return cast(DocxEntityParagraph, self.entity.append(DocxEntityParagraph(text, style, self._ref)))
+        
+    def red(self, text:str = "", style:str=None, pretext:str="") -> DocxEntityParagraph:
+        p = DocxEntityParagraph(pretext, style)
+        return cast(DocxEntityParagraph, self.entity.append(p.red(text)))
+
+    def font(self, text:str = "", font_name:str="Calibri", font_size:int=12, style:str=None, pretext:str="") -> DocxEntityParagraph:
+        p = DocxEntityParagraph(pretext, style)
+        return cast(DocxEntityParagraph, self.entity.append(p.font(text, font_name, font_size)))
+
+    def color(self, text: str, r:int=0, g:int=0, b:int=0, style: str=None, pretext:str="") -> 'DocxEntityParagraph':
+        p = DocxEntityParagraph(pretext, style)
+        return cast(DocxEntityParagraph, self.entity.append(p.color(text, r, g, b, style)))
         
     def b(self, text:str = "", style:str=None, pretext:str="") -> DocxEntityParagraph:
         p = DocxEntityParagraph(pretext, style)
