@@ -178,7 +178,7 @@ class PartFactory(object):
     is used to construct the part, which is by default ``opc.package.Part``.
     """
     part_class_selector = None
-    part_type_for = {}
+    part_type_for = {} # type: ignore
     default_part_type = Part
 
     def __new__(cls, partname, content_type, reltype, blob, package):

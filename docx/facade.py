@@ -1,6 +1,7 @@
 
 from PIL import Image # type: ignore
-from docx import Document # type: ignore
+import docx # type: ignore
+import docx.document # type: ignore
 from docx.shared import Cm, Pt # type: ignore
 from docx.enum.dml import MSO_THEME_COLOR_INDEX as MSO_THEME_COLOR # type: ignore
 from docx.enum.section import WD_SECTION_START # type: ignore
@@ -15,7 +16,7 @@ import uno  # type: ignore
 import Danny.OOo.OOoLib
 from Danny.OOo import OOoLib as ooo
 from Danny.OOo.OOoLib import makePropertyValue
-from docx.shared import RGBColor
+from docx.shared import RGBColor # type: ignore
 
 ref_t = Callable[[str], str]
 
@@ -23,44 +24,44 @@ TABLE_STD_STYLE = "Table Grid"
 
 class IDocxParRenderer(object, metaclass=abc.ABCMeta):
     @abc.abstractmethod
-    def render(self, p: Paragraph, doc: Document) -> None:
+    def render(self, p: Paragraph, doc: docx.document.Document) -> None:
         raise NotImplementedError('users must define render to use this base class')
 
 class DocxEntityParagraphNormal(IDocxParRenderer):
     def __init__(self, text: str, style: str=None) -> None:
         self.text, self.style = text, style
-    def render(self, p: Paragraph, _: Document) -> None:
+    def render(self, p: Paragraph, _: docx.document.Document) -> None:
         p.add_run(self.text, self.style)
 
 class DocxEntityParagraphItalic(IDocxParRenderer):
     def __init__(self, text: str, style: str=None) -> None:
         self.text, self.style = text, style
-    def render(self, p: Paragraph, _: Document) -> None:
+    def render(self, p: Paragraph, _: docx.document.Document) -> None:
         p.add_run(self.text, self.style).italic = True
 
 class DocxEntityParagraphUnderline(IDocxParRenderer):
     def __init__(self, text: str, style: str=None) -> None:
         self.text, self.style = text, style
-    def render(self, p: Paragraph, _: Document) -> None:
+    def render(self, p: Paragraph, _: docx.document.Document) -> None:
         p.add_run(self.text, self.style).underline = True
 
 class DocxEntityParagraphColor(IDocxParRenderer):
     def __init__(self, text: str, color: RGBColor, style: str=None) -> None:
         self.text, self.style, self.color = text, style, color
-    def render(self, p: Paragraph, _: Document) -> None:
+    def render(self, p: Paragraph, _: docx.document.Document) -> None:
         p.add_run(self.text, self.style).font.color.rgb = self.color
 
 class DocxEntityParagraphBold(IDocxParRenderer):
     def __init__(self, text: str, style: str=None) -> None:
         self.text, self.style = text, style
-    def render(self, p: Paragraph, _: Document) -> None:
+    def render(self, p: Paragraph, _: docx.document.Document) -> None:
         p.add_run(self.text, self.style).bold = True
 
 class DocxEntityParagraphFont(IDocxParRenderer):
     def __init__(self, text: str, font_name:str, font_size:int, style: str=None) -> None:
         self.text, self.style = text, style
         self.font_name, self.font_size = font_name, font_size
-    def render(self, p: Paragraph, _: Document) -> None:
+    def render(self, p: Paragraph, _: docx.document.Document) -> None:
         font = p.add_run(self.text, self.style).font
         font.name = self.font_name
         font.size = Pt(self.font_size)
@@ -68,19 +69,19 @@ class DocxEntityParagraphFont(IDocxParRenderer):
 class DocxEntityParagraphItem(IDocxParRenderer):
     def __init__(self, text: str, style: str="List Paragraph") -> None:
         self.text, self.style = text, style
-    def render(self, _: Paragraph, doc: Document) -> None:
+    def render(self, _: Paragraph, doc: docx.document.Document) -> None:
         doc.add_paragraph(self.text, self.style)
 
 class DocxEntityParagraphRef(IDocxParRenderer):
     def __init__(self, ref: ref_t, key: str) -> None:
         self.key, self.ref = key, ref
-    def render(self, p: Paragraph, _: Document) -> None:
+    def render(self, p: Paragraph, _: docx.document.Document) -> None:
         if self.ref:
             p.add_run(self.ref(self.key))
 
 class IDocxEntityRenderer(object, metaclass=abc.ABCMeta):
     @abc.abstractmethod
-    def render(self, doc: Document):
+    def render(self, doc: docx.document.Document):
         raise NotImplementedError('users must define render to use this base class')
 
 class DocxEntityParagraph(IDocxEntityRenderer):
@@ -98,7 +99,7 @@ class DocxEntityParagraph(IDocxEntityRenderer):
         self.subs.append(DocxEntityParagraphUnderline(text, style))
         return self
     def color(self, text: str, r:int=0, g:int=0, b:int=0, style: str=None) -> 'DocxEntityParagraph':
-        self.subs.append(DocxEntityParagraphColor(text, RGBColor(r,g,b), style))
+        self.subs.append(DocxEntityParagraphColor(text, RGBColor(r,g,b), style)) # type: ignore
         return self
     def font(self, text:str = "", font_name:str="Calibri", font_size:int=12, style:str=None) -> 'DocxEntityParagraph':
         self.subs.append(DocxEntityParagraphFont(text, font_name, font_size, style))
@@ -114,7 +115,7 @@ class DocxEntityParagraph(IDocxEntityRenderer):
     def ref(self, key: str) -> 'DocxEntityParagraph':
         self.subs.append(DocxEntityParagraphRef(self._ref, key))
         return self
-    def render(self, doc: Document) -> None:
+    def render(self, doc: docx.document.Document) -> None:
         p = doc.add_paragraph(self.text, self.style)
         for obj in self.subs:
             obj.render(p, doc)
@@ -130,7 +131,7 @@ class DocxEntityPicture(IDocxEntityRenderer):
         self.width, self.height, self.filename, self.caption = width, height, filename, caption
         self.key = "?"
     
-    def render(self, doc: Document) -> None:
+    def render(self, doc: docx.document.Document) -> None:
         imagePath = 'images/' + self.filename
         
         # autosize en fonction de l'orientation
@@ -164,7 +165,7 @@ class DocxEntityPicture(IDocxEntityRenderer):
 class DocsEntityPageSection(IDocxEntityRenderer):
     def __init__(self, start_type = WD_SECTION_START.NEW_PAGE, orientation = WD_ORIENTATION.PORTRAIT):  # @UndefinedVariable pylint: disable=no-member
         self.start_type, self.orientation = start_type, orientation
-    def render(self, doc: Document) -> None:
+    def render(self, doc: docx.document.Document) -> None:
         last_section = doc.sections[-1]
         last_orientation = last_section.orientation
         s = doc.add_section(self.start_type)
@@ -173,7 +174,7 @@ class DocsEntityPageSection(IDocxEntityRenderer):
             s.orientation, s.page_height, s.page_width = self.orientation, new_height, new_width
 
 class DocsEntityPageBreak(IDocxEntityRenderer):
-    def render(self, doc: Document) -> None:
+    def render(self, doc: docx.document.Document) -> None:
         doc.add_page_break()
 
 class DocxEntityDocumentTitle(IDocxEntityRenderer):
@@ -215,7 +216,7 @@ class DocxEntityTable((IDocxEntityRenderer)):
     def __init__(self, callback: TableConstructor, rows: int, cols: int, caption: str=None, style: str=None) -> None:
         self.callback, self.caption, self.rows, self.cols, self.style = callback, caption, rows, cols, style
         self.key = "?"
-    def render(self, doc: Document) -> None:
+    def render(self, doc: docx.document.Document) -> None:
         table = doc.add_table(self.rows, self.cols, self.style)
         self.callback.render(table)
         if self.caption:
@@ -224,7 +225,7 @@ class DocxEntityTable((IDocxEntityRenderer)):
 class DocxEntityTOC(IDocxEntityRenderer):
     def __init__(self, titre:str, command:str) -> None:
         self.command, self.titre = command, titre
-    def render(self, doc: Document) -> None:
+    def render(self, doc: docx.document.Document) -> None:
         if self.titre:
             doc.add_paragraph(self.titre, "Illustration Index Heading")
         paragraph = doc.add_paragraph()
@@ -263,7 +264,7 @@ class DocxEntity(IDocxEntityRenderer):
         self.entities.append(obj)
         return obj
         
-    def initialize(self, doc: Document) -> None:
+    def initialize(self, doc: docx.document.Document) -> None:
         # caption defaults
         style = doc.styles['Caption']
         #font = style.font
@@ -300,7 +301,7 @@ class DocxEntity(IDocxEntityRenderer):
         paragraph_format.space_before = Pt(6)
         paragraph_format.space_after = Pt(12)
         
-    def render(self, doc: Document) -> None:
+    def render(self, doc: docx.document.Document) -> None:
         self.initialize(doc)
         for obj in self.entities:
             obj.render(doc)
@@ -353,13 +354,13 @@ class Docx(object):
     def subsubsec(self, title:str, style:str=None) -> DocxEntitySubSubSection:
         return cast(DocxEntitySubSubSection, self.entity.append(DocxEntitySubSubSection(title, style)))
         
-    def subsubsubsec(self, title:str, style:str=None) -> DocxEntitySubSubSection:
+    def subsubsubsec(self, title:str, style:str=None) -> DocxEntitySubSubSubSection:
         return cast(DocxEntitySubSubSubSection, self.entity.append(DocxEntitySubSubSubSection(title, style)))
         
-    def subsubsubsubsec(self, title:str, style:str=None) -> DocxEntitySubSubSection:
+    def subsubsubsubsec(self, title:str, style:str=None) -> DocxEntitySubSubSubSubSection:
         return cast(DocxEntitySubSubSubSubSection, self.entity.append(DocxEntitySubSubSubSubSection(title, style)))
         
-    def subsubsubsubsubsec(self, title:str, style:str=None) -> DocxEntitySubSubSection:
+    def subsubsubsubsubsec(self, title:str, style:str=None) -> DocxEntitySubSubSubSubSubSection:
         return cast(DocxEntitySubSubSubSubSubSection, self.entity.append(DocxEntitySubSubSubSubSubSection(title, style)))
         
     def pic(self, filename: str, width:Cm=DocxEntityPicture.DEFAULT_WIDTH, height:Cm=None, caption:str=None) -> DocxEntityPicture:
@@ -399,11 +400,11 @@ class Docx(object):
     def table(self, callback: TableConstructor, rows: int, cols: int, caption=None, style=None) -> DocxEntityTable:
         return cast(DocxEntityTable, self.entity.append(DocxEntityTable(callback, rows, cols, caption, style)))
 
-    def save(self, target:str=None, pre: Callable[[Document],None]=None) -> None:
+    def save(self, target:str=None, pre: Callable[[docx.document.Document],None]=None) -> None:
         if self.filename:
-            d = Document(self.filename)
+            d = docx.Document(self.filename)
         else:
-            d = Document()
+            d = docx.Document()
         #for i in d.styles:
         #    print(i)
         if pre:
@@ -423,7 +424,7 @@ class Docx(object):
             if self.filename:
                 path = self.filename
             else:
-                raise "Error source filename"
+                raise BaseException("Error source filename")
         if target:
             target_path = target
         else:

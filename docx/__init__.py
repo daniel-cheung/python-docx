@@ -24,7 +24,7 @@ def part_class_selector(content_type, reltype):
     return None
 
 
-PartFactory.part_class_selector = part_class_selector
+PartFactory.part_class_selector = part_class_selector # type: ignore
 PartFactory.part_type_for[CT.OPC_CORE_PROPERTIES] = CorePropertiesPart
 PartFactory.part_type_for[CT.WML_DOCUMENT_MAIN] = DocumentPart
 PartFactory.part_type_for[CT.WML_NUMBERING] = NumberingPart

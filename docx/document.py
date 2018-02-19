@@ -9,7 +9,7 @@ from __future__ import (
 )
 
 from .blkcntnr import BlockItemContainer
-from .enum.section import WD_SECTION
+from .enum.section import WD_SECTION # type: ignore
 from .enum.text import WD_BREAK
 from .section import Section, Sections
 from .shared import ElementProxy, Emu
